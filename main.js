@@ -61,6 +61,25 @@ function menu() {
         console.log('👋 Exiting NodeVault...');
         rl.close();
         break;
+case '6': // Search Records
+  rl.question('Enter search keyword: ', keyword => {
+    const results = db.listRecords().filter(record =>
+      record.id.toString() === keyword.trim() ||
+      record.name.toLowerCase().includes(keyword.trim().toLowerCase())
+    );
+
+    if (results.length === 0) {
+      console.log('No records found.');
+    } else {
+      console.log(`Found ${results.length} matching records:`);
+      results.forEach((r, i) => {
+        console.log(`${i + 1}. ID: ${r.id} | Name: ${r.name} | Created: ${r.created}`);
+      });
+    }
+
+    menu(); // show menu again
+  });
+  break;
 
       default:
         console.log('Invalid option.');
