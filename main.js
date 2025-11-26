@@ -14,7 +14,12 @@ function menu() {
 2. List Records
 3. Update Record
 4. Delete Record
-5. Exit
+5. Search Records
+6.
+7.
+8.
+9.
+10. Exit
 =====================
   `);
 
@@ -57,11 +62,7 @@ function menu() {
         });
         break;
 
-      case '5':
-        console.log('👋 Exiting NodeVault...');
-        rl.close();
-        break;
-case '6': // Search Records
+case '5': // Search Records
   rl.question('Enter search keyword: ', keyword => {
     const results = db.listRecords().filter(record =>
       record.id.toString() === keyword.trim() ||
@@ -81,6 +82,11 @@ case '6': // Search Records
   });
   break;
 
+        case '5':
+        console.log('👋 Exiting NodeVault...');
+        rl.close();
+        break;
+        
       default:
         console.log('Invalid option.');
         menu();
