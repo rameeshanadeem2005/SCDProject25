@@ -1,9 +1,10 @@
-====== NodeVault Export ======
-Export Time: 11/24/2025, 11:50:24 PM
-Total Records: 3
+====== NodeVault Export ===================
+Export Time: 11/26/2025, 5:59:59 PM
+Total Records: 4
 File: export.txt
-===============================
+==========================================
 
  1. ID: 1764018046417 | Name: Ali Raza | Value: 1111 | Created: 2025-11-24
 2. ID: 1764018060527 | Name: Alisma | Value: 2 | Created: 2025-11-24
-3. ID: 1764027214873 | Name: Abrar | Value: 1332 | Created: 2025-11-24
+3. ID: 1764029739059 | Name: abc | Value: 523 | Created: 2025-11-25
+4. ID: 1764030165999 | Name: def | Value: 254 | Created: 2025-11-25
