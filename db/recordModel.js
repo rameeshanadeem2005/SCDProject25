@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-cconst recordSchema = new mongoose.Schema({
+const recordSchema = new mongoose.Schema({
 	name: String,
 	value: String,
 	created: {

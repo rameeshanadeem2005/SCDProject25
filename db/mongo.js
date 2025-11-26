@@ -1,9 +1,16 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 
 async function connectMongo(){
-	await mongoose.connect("mongodb://127.0.0.1:27017/nodevault",{
-		useNewUrlParser: true,
-		useUnifiedTopology:true
+	const uri = process.env.MONGO_URI;
+
+	if(!uri){
+		console.error("MONGO_URI missing in .env file");
+		process.exit(1);
+	}
+
+	await mongoose.connect(uri,{
+
 	});
 	console.log("Connected to MongoDB");
 }
