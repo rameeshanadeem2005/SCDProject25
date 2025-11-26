@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 const connectMongo = require("./db/mongo");
 const fs =require('fs');
 const path = require('path');
+=======
+>>>>>>> 9de406a (updated main.js)
 const readline = require('readline');
 const db = require('./db');
 const readDB = db.listRecords;
