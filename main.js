@@ -1,20 +1,51 @@
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 const connectMongo = require("./db/mongo");
 const fs =require('fs');
 const path = require('path');
 =======
 >>>>>>> 9de406a (updated main.js)
+=======
+require('dotenv').config();
+const mongoose = require('mongoose');
+const Record = require('./db/recordModel');
+const fs = require('fs');
+const path = require('path');
+require('./events/logger');
+>>>>>>> Stashed changes
 const readline = require('readline');
-const db = require('./db');
-const readDB = db.listRecords;
-require('./events/logger'); // Initialize event logger
-	const readlineSync = require('readline-sync');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
 });
+mongoose.connect(process.env.MONGO_URI,{
+	useNewUrlParser: true,
+	useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => {
+	console.error('MongoDB connection error: ',err);
+	process.exit(1);
+});
 
-connectMongo();
+async function listRecords(){
+	return await Record.find().sort({ id: 1});
+}
+async function addRecord(name, value){
+	const last = await Record.findOne().sort({ id: -1});
+	const id = last ? last.id + 1 : 1;
+	await Record.create({ id, name, value, created: new Date() });
+}
+async function updateRecord(id, name, value){
+	const res =await Record.updateOne({id},{name,value});
+	return res.modifiedCount > 0;
+}
+async function deleteRecord(id){
+	const res = await Record.deleteOne({id});
+	return res.deletedCount > 0;
+}
+
+
 
 function menu() {
   console.log(`
@@ -36,8 +67,8 @@ function menu() {
     switch (ans.trim()) {
       case '1':
         rl.question('Enter name: ', name => {
-          rl.question('Enter value: ', value => {
-            db.addRecord({ name, value });
+          rl.question('Enter value: ', async value => {
+            await addRecord({ name, value });
             console.log('✅ Record added successfully!');
             menu();
           });
@@ -45,7 +76,7 @@ function menu() {
         break;
 
       case '2':
-        const records = db.listRecords();
+        const records = await listRecords();
         if (records.length === 0) console.log('No records found.');
         else records.forEach(r => console.log(`ID: ${r.id} | Name: ${r.name} | Value: ${r.value}`));
         menu();
@@ -54,8 +85,8 @@ function menu() {
       case '3':
         rl.question('Enter record ID to update: ', id => {
           rl.question('New name: ', name => {
-            rl.question('New value: ', value => {
-              const updated = db.updateRecord(Number(id), name, value);
+            rl.question('New value: ', async value => {
+              const updated = await updateRecord(Number(id), name, value);
               console.log(updated ? '✅ Record updated!' : '❌ Record not found.');
               menu();
             });
@@ -64,13 +95,14 @@ function menu() {
         break;
 
       case '4':
-        rl.question('Enter record ID to delete: ', id => {
-          const deleted = db.deleteRecord(Number(id));
+        rl.question('Enter record ID to delete: ', async id => {
+          const deleted = await deleteRecord(Number(id));
           console.log(deleted ? '🗑️ Record deleted!' : '❌ Record not found.');
           menu();
         });
         break;
 
+<<<<<<< Updated upstream
       case '5':
 	
 	rl.question('Enter search keyword: ', keyword => {
@@ -89,6 +121,31 @@ function menu() {
 	menu();
 });
 	break;
+=======
+
+case '5': // Search Records
+  rl.question('Enter search keyword: ', async keyword => {
+    const results = await Record.find({
+	$or: [
+		{ id: Number(keyword) || 0},
+		{ name: {$regex: keyword, $options: 'i'}}
+	]
+	});
+    
+
+    if (results.length === 0) {
+      console.log('No records found.');
+    } else {
+      console.log(`Found ${results.length} matching records:`);
+      results.forEach((r, i) => {
+        console.log(`${i + 1}. ID: ${r.id} | Name: ${r.name} | Created: ${r.created}`);
+      });
+    }
+
+    menu(); // show menu again
+  });
+  break;
+>>>>>>> Stashed changes
 
       case '6':
 	rl.question('Choose field to sort by (name/created): ', field =>{
@@ -97,39 +154,34 @@ function menu() {
 			console.log('Invalid field. Use "name" or "created".');
 			return menu();
 		}
-		rl.question('Choose order (ascending/descending); ', order=>{
+		rl.question('Choose order (ascending/descending); ', async order=>{
 			order=order.trim().toLowerCase();
 			if(order !== 'ascending' && order !== 'descending'){
 				console.log('Invalid order. Use "ascending" or "descending".');
 				return menu();
 			}
-			const records=db.listRecords();
-			if (records.length ===0){
-				console.log('No records to sort.');
-				return menu();
-			}
-			const sorted = [...records].sort((a,b)=>{
-				let valA = a[field].toString().toLowerCase();
-				let valB = b[field].toString().toLowerCase();
+			const sortObj = {};
+			sortObj[field] = order === 'ascending' ? 1 : -1;
+			const sorted = await Record.find().sort(sortObj);
 
-				if (valA < valB) return order === 'ascending' ? -1 : 1;
-				if (valA > valB) return order ==='ascending' ? 1 : -1;
-				return 0;
-			});
+			if (sorted.length ===0){
+				console.log('No records to sort.');
+			else{
 			console.log('Sorted Records:');
 			sorted.forEach((r,i) => {
 			console.log(`${i+1}. ID: ${r.id} | Name: ${r.name} | Created: ${r.created}`);
-	
+
 	});
+	}
 	menu();
-	});	
+	});
 	});
 	break;
 
       case '7':
 
 
-	const allRecords=db.listRecords();
+	const allRecords=await listRecords();
 
 	const exportPath = path.join(__dirname, 'export.txt');
 
@@ -157,6 +209,7 @@ function menu() {
 
 	if(files.length === 0){
 		console.log("No backup files found.");
+		return menu();
 	}
 
 	console.log("\nAvailabe Backups:");
@@ -164,7 +217,7 @@ function menu() {
 		console.log(`${index + 1}. ${file}`);
 	});
 
-	rl.question("\nEnter backup number to restore: ", num=>{
+	rl.question("\nEnter backup number to restore: ", async num=>{
 		const index=Number(num) - 1;
 
 		if(index<0 || index>= files.length){
@@ -173,11 +226,13 @@ function menu() {
 		}
 
 		const selectedFile = files[index];
-		const backupPath = path.join(backupsDir, selectedFile);
-		const data = fs.readFileSync(backupPath, 'utf8');
+		const data =JSON.parse(fs.readFileSync(path.join(backupsDir,selectedFile), 'utf8');
 
-		fs.writeFileSync(path.join(__dirname, 'data', 'vault.json'), data);
-		db.reloadData();
+		await Record.deleteMany({});
+
+		for(const record of data){
+			await Record.create(record);
+		}
 
 		console.log(`\n Backup restored successfully from ${selectedFile}`);
 		menu();
@@ -186,20 +241,16 @@ function menu() {
 	break;
 
 	case '9':
-		const statsData = db.listRecords();
+		const statsData = await listRecords();
 
 	console.log("\nVault Statistics:");
 	console.log("---------------------------");
 	console.log(`Total Records: ${statsData.length}`);
 
-	const stats = fs.statSync(path.join(__dirname, 'data', 'vault.json'));
-	const lastModified = stats.mtime.toLocaleString();
-	console.log(`Last Modified: ${lastModified}`);
 
 	if(statsData.length === 0){
 		console.log("\n(Other statistics unavailable because vault is empty)");
-		menu();
-		break;
+		return menu();
 	}
 
 	let longestRecord = statsData.reduce((max, r)=>
@@ -213,11 +264,9 @@ function menu() {
 		new Date(a.created) - new Date(b.created)
 	);
 
-	const earliest = sortedByDate[0].created;
-	const latest = sortedByDate[sortedByDate.length - 1].created;
 
-	console.log(`Earliest Record: ${earliest}`);
-	console.log(`Latest Record: ${latest}`);
+	console.log(`Earliest Record: ${sortedByDate[0].created}`);
+	console.log(`Latest Record: ${sortedByDate[sortedByDate.length - 1].created}`);
 	menu();
 	break;
 
@@ -225,6 +274,7 @@ function menu() {
 	case '10':
         console.log('👋 Exiting NodeVault...');
         rl.close();
+	mongoose.disconnect();
         break;
 
 
